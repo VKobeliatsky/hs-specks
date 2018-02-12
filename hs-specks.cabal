@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b78b22ce23342f2793ea0368074ebc4ea73397529d5decd17e1f14d1586b325d
+-- hash: b0c07fdd949ec1e9d4745310ddae7b504360150732367b92e8306282b0d4c91b
 
 name:           hs-specks
 version:        0.1.0.0
@@ -24,11 +24,10 @@ library
       src
   ghc-options: -Wall
   build-depends:
-      base >=4.7 && <5
-    , matrix
+      array
+    , base >=4.7 && <5
     , mtl
     , random
-    , vector
   exposed-modules:
       Main
       Specks
@@ -43,13 +42,12 @@ test-suite spec
       test
   ghc-options: -Wall
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , hs-specks
     , hspec
-    , matrix
     , mtl
     , random
-    , vector
   other-modules:
       SpecksSpec
       Paths_hs_specks

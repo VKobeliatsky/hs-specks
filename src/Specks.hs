@@ -1,14 +1,14 @@
 module Specks
   ( shuffledSpecks
-  , speckIndex
+  , pickRandom
+  , speckCoords
   , prettySpecks
   , Speck(Speck, Cursor)
   , GameField
   ) where
 
 import           Control.Monad.State
-import qualified Data.Matrix         as Matrix
-import qualified Data.Vector         as Vector
+import           Data.Array
 import           System.Random
 
 data Speck
@@ -16,41 +16,42 @@ data Speck
   | Cursor
   deriving (Show, Eq)
 
-type GameField = Matrix.Matrix Speck
+type GameField = Array (Int, Int) Speck
 
-specks :: Int -> Vector.Vector Speck
-specks count = Vector.generate count $ Speck . (+1)
+specks :: Int -> [Speck]
+specks count = map (\i -> if i == count then Cursor else Speck i) [1..count]
 
-pickRandom :: StateT (Vector.Vector a) IO a
+pickRandom :: StateT [a] IO a
 pickRandom = do
-  v <- get
+  arr <- get
   i <- lift
     $ getStdRandom
-    $ randomR (1, Vector.length v)
-  let (left, right) = Vector.splitAt i v
-  put $ Vector.concat [Vector.init left, right]
-  return $ Vector.last left
+    $ randomR (1, length arr - 1)
+  let (left, right) = splitAt i arr
+  put $ init left ++ right
+  return $ last left
 
 shuffledSpecks :: (Int, Int) -> IO GameField
-shuffledSpecks (m, n) = fst <$> runStateT
-  (sequence $ Matrix.matrix m n speckOrCursor)
-  (specks $ m * n - 1)
+shuffledSpecks (m, n) = listArray ((0, 0), (m-1, n-1)) . fst <$> runStateT
+  (mapM (\i -> if i == lastIndex then return Cursor else pickRandom) [0..lastIndex])
+  (specks $ m * n)
     where
-      speckOrCursor (i, j) = if i * j == m * n
-        then return Cursor
-        else pickRandom
+      lastIndex = m * n - 1
 
-speckIndex :: Speck -> GameField -> Maybe (Int, Int)
-speckIndex target matrix = Vector.ifoldr
-  (\j vector result -> maybe
-    result (\i -> Just (i+1, j+1))
-    $ Vector.elemIndex target vector
-  ) Nothing
-  $ matrixToVectors matrix
-  where
-    matrixToVectors m = Vector.generate
-      (Matrix.ncols m)
-      $ flip Matrix.getCol m . (+1)
+speckCoords :: Speck -> GameField -> Maybe (Int, Int)
+speckCoords target field = foldl
+  (\result (coords, item) -> case result of
+    Just _ -> result
+    _      -> if item == target then Just coords else Nothing
+  )
+  Nothing $ assocs field
 
 prettySpecks :: GameField -> String
-prettySpecks = Matrix.prettyMatrix
+prettySpecks field =
+  let
+    lastCol = snd . snd $ bounds field
+  in
+    seq lastCol
+    $ foldMap
+      (\((_, col), speck) -> show speck ++ if col == lastCol then "\n" else " \t")
+      $ assocs field

@@ -9,6 +9,7 @@ module Specks
 
 import           Control.Monad.State
 import           Data.Array
+import           Data.Foldable
 import           System.Random
 
 data Speck
@@ -37,7 +38,7 @@ shuffledSpecks (m, n) = listArray ((0, 0), (m-1, n-1)) . fst <$> runStateT
       specks count = map (\i -> if i == count then Cursor else Speck i) [1..count]
 
 speckCoords :: Speck -> GameField -> Maybe (Int, Int)
-speckCoords target field = foldl
+speckCoords target field = foldl'
   (\result (coords, item) -> case result of
     Just _ -> result
     _      -> if item == target then Just coords else Nothing

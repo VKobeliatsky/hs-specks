@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1aa27316a314a5265f4934783263685f7eec467fe4b101fa4fe0546656f1650e
+-- hash: b78b22ce23342f2793ea0368074ebc4ea73397529d5decd17e1f14d1586b325d
 
 name:           hs-specks
 version:        0.1.0.0
@@ -19,16 +19,38 @@ cabal-version:  >= 1.10
 extra-source-files:
     README.md
 
-executable hs-specks
-  main-is: Main.hs
+library
   hs-source-dirs:
       src
+  ghc-options: -Wall
   build-depends:
       base >=4.7 && <5
     , matrix
     , mtl
     , random
     , vector
+  exposed-modules:
+      Main
+      Specks
   other-modules:
+      Paths_hs_specks
+  default-language: Haskell2010
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
+  ghc-options: -Wall
+  build-depends:
+      base >=4.7 && <5
+    , hs-specks
+    , hspec
+    , matrix
+    , mtl
+    , random
+    , vector
+  other-modules:
+      SpecksSpec
       Paths_hs_specks
   default-language: Haskell2010

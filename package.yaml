@@ -11,6 +11,8 @@ category:            Web
 extra-source-files:
 - README.md
 
+ghc-options: -Wall
+
 dependencies:
   - base >= 4.7 && < 5
   - mtl
@@ -18,7 +20,13 @@ dependencies:
   - matrix
   - vector
 
-executables:
-  hs-specks:
-    source-dirs:      src
-    main:             Main.hs
+library:
+  source-dirs: src
+  
+tests:
+  spec:
+    source-dirs: test
+    main: Spec.hs
+    dependencies:
+      - hs-specks
+      - hspec

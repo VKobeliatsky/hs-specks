@@ -18,9 +18,6 @@ data Speck
 
 type GameField = Array (Int, Int) Speck
 
-specks :: Int -> [Speck]
-specks count = map (\i -> if i == count then Cursor else Speck i) [1..count]
-
 pickRandom :: StateT [a] IO a
 pickRandom = do
   arr <- get
@@ -37,6 +34,7 @@ shuffledSpecks (m, n) = listArray ((0, 0), (m-1, n-1)) . fst <$> runStateT
   (specks $ m * n)
     where
       lastIndex = m * n - 1
+      specks count = map (\i -> if i == count then Cursor else Speck i) [1..count]
 
 speckCoords :: Speck -> GameField -> Maybe (Int, Int)
 speckCoords target field = foldl

@@ -41,11 +41,12 @@ matrixElemIndex target matrix = Vector.ifoldr
   (\j vector result -> maybe
     result (\i -> Just (i+1, j+1))
     $ Vector.elemIndex target vector
-  ) Nothing vectorOfVectors
+  ) Nothing
+  $ matrixToVectors matrix
   where
-    vectorOfVectors = Vector.generate
-      (Matrix.ncols matrix)
-      $ flip Matrix.getCol matrix . (+1)
+    matrixToVectors m = Vector.generate
+      (Matrix.ncols m)
+      $ flip Matrix.getCol m . (+1)
 
 main :: IO ()
 main = do

@@ -2,9 +2,11 @@ module Specks
   ( shuffledSpecks
   , pickRandom
   , speckCoords
+  , neighbourSpecks
   , prettySpecks
   , Speck(Speck, Cursor)
   , Field
+  , module Data.Array
   ) where
 
 import           Control.Monad.State
@@ -44,6 +46,13 @@ speckCoords target field = foldl'
     _      -> if item == target then Just coords else Nothing
   )
   Nothing $ assocs field
+
+neighbourSpecks :: (Int, Int) -> Field -> [Speck]
+neighbourSpecks (i, j) field =
+  map (field!)
+  $ filter
+    (inRange (bounds field))
+    [(i-1, j), (i, j+1), (i+1, j), (i, j-1)]
 
 prettySpecks :: Field -> String
 prettySpecks field =

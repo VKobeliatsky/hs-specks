@@ -4,7 +4,7 @@ module Specks
   , speckCoords
   , prettySpecks
   , Speck(Speck, Cursor)
-  , GameField
+  , Field
   ) where
 
 import           Control.Monad.State
@@ -17,7 +17,7 @@ data Speck
   | Cursor
   deriving (Show, Eq)
 
-type GameField = Array (Int, Int) Speck
+type Field = Array (Int, Int) Speck
 
 pickRandom :: StateT [a] IO a
 pickRandom = do
@@ -29,7 +29,7 @@ pickRandom = do
   put $ init left ++ right
   return $ last left
 
-shuffledSpecks :: (Int, Int) -> IO GameField
+shuffledSpecks :: (Int, Int) -> IO Field
 shuffledSpecks (m, n) = listArray ((0, 0), (m-1, n-1)) . fst <$> runStateT
   (mapM (\i -> if i == lastIndex then return Cursor else pickRandom) [0..lastIndex])
   (specks $ m * n)
@@ -37,7 +37,7 @@ shuffledSpecks (m, n) = listArray ((0, 0), (m-1, n-1)) . fst <$> runStateT
       lastIndex = m * n - 1
       specks count = map (\i -> if i == count then Cursor else Speck i) [1..count]
 
-speckCoords :: Speck -> GameField -> Maybe (Int, Int)
+speckCoords :: Speck -> Field -> Maybe (Int, Int)
 speckCoords target field = foldl'
   (\result (coords, item) -> case result of
     Just _ -> result
@@ -45,12 +45,15 @@ speckCoords target field = foldl'
   )
   Nothing $ assocs field
 
-prettySpecks :: GameField -> String
+prettySpecks :: Field -> String
 prettySpecks field =
   let
     lastCol = snd . snd $ bounds field
+    render (Speck n) = show n
+    render Cursor    = "_"
+    separator col = if col == lastCol then "\n" else "\t"
   in
     seq lastCol
     $ foldMap
-      (\((_, col), speck) -> show speck ++ if col == lastCol then "\n" else " \t")
+      (\((_, col), speck) -> render speck ++ separator col)
       $ assocs field

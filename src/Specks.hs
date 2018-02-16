@@ -60,14 +60,13 @@ neighbourSpecks (i, j) field =
     [(i-1, j), (i, j+1), (i+1, j), (i, j-1)]
 
 swap :: Coords -> Coords -> Field -> Field
-swap i j field =
-  field // map
-    (\a@(x, _) -> if
-      | x == i    -> (i, field!j)
-      | x == j    -> (j, field!i)
-      | otherwise -> a
-    )
-    (assocs field)
+swap i j field = ixmap
+  (bounds field)
+  (\x -> if
+    | x == i    -> j
+    | x == j    -> i
+    | otherwise -> x
+  ) field
 
 prettySpecks :: Field -> String
 prettySpecks field =

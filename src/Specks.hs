@@ -1,7 +1,10 @@
+{-# LANGUAGE MultiWayIf #-}
+
 module Specks
   ( shuffledSpecks
   , pickRandom
   , speckCoords
+  , swap
   , neighbourSpecks
   , prettySpecks
   , Speck(Speck, Cursor)
@@ -19,7 +22,9 @@ data Speck
   | Cursor
   deriving (Show, Eq)
 
-type Field = Array (Int, Int) Speck
+type Coords = (Int, Int)
+
+type Field = Array Coords Speck
 
 pickRandom :: StateT [a] IO a
 pickRandom = do
@@ -31,15 +36,15 @@ pickRandom = do
   put $ init left ++ right
   return $ last left
 
-shuffledSpecks :: (Int, Int) -> IO Field
-shuffledSpecks (m, n) = listArray ((0, 0), (m-1, n-1)) . fst <$> runStateT
+shuffledSpecks :: Coords -> IO Field
+shuffledSpecks (m, n) = listArray ((0, 0), (m-1, n-1)) <$> evalStateT
   (mapM (\i -> if i == lastIndex then return Cursor else pickRandom) [0..lastIndex])
   (specks $ m * n)
     where
       lastIndex = m * n - 1
       specks count = map (\i -> if i == count then Cursor else Speck i) [1..count]
 
-speckCoords :: Speck -> Field -> Maybe (Int, Int)
+speckCoords :: Speck -> Field -> Maybe Coords
 speckCoords target field = foldl'
   (\result (coords, item) -> case result of
     Just _ -> result
@@ -47,12 +52,22 @@ speckCoords target field = foldl'
   )
   Nothing $ assocs field
 
-neighbourSpecks :: (Int, Int) -> Field -> [Speck]
+neighbourSpecks :: Coords -> Field -> [Speck]
 neighbourSpecks (i, j) field =
   map (field!)
   $ filter
     (inRange (bounds field))
     [(i-1, j), (i, j+1), (i+1, j), (i, j-1)]
+
+swap :: Coords -> Coords -> Field -> Field
+swap i j field =
+  field // map
+    (\a@(x, _) -> if
+      | x == i    -> (i, field!j)
+      | x == j    -> (j, field!i)
+      | otherwise -> a
+    )
+    (assocs field)
 
 prettySpecks :: Field -> String
 prettySpecks field =

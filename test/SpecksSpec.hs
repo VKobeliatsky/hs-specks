@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiWayIf #-}
+
 module SpecksSpec where
 
 import           Specks
@@ -22,3 +24,15 @@ spec =
         \field -> neighbourSpecks (0, 1) field `shouldBe` [field!(0, 2), field!(1, 1), field!(0, 0)]
       it "should return top, right and left element for the bottom spec" $
         \field -> neighbourSpecks (2, 1) field `shouldBe` [field!(1, 1), field!(2, 2), field!(2, 0)]
+    describe "swap" $
+      it "should swap specs in a field" $
+        \field -> let
+          i = (0, 0)
+          j = (2, 4)
+          swapped = swap i j field
+        in assocs swapped `shouldSatisfy` all
+          (\(x, speck) -> if
+            | x == i    -> speck == field ! j
+            | x == j    -> speck == field ! i
+            | otherwise -> speck == field ! x
+          )
